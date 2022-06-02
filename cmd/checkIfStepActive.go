@@ -83,6 +83,7 @@ func checkIfStepActive(utils piperutils.FileUtils) error {
 
 	// load and evaluate step conditions
 	if checkStepActiveOptions.v1Active {
+		log.Entry().Infof("Going here 1")
 		runConfig := config.RunConfig{StageConfigFile: stageConfigFile}
 		runConfigV1 := &config.RunConfigV1{RunConfig: runConfig}
 		err = runConfigV1.InitRunConfigV1(projectConfig, nil, nil, nil, nil, utils, GeneralConfig.EnvRootPath)
@@ -92,6 +93,7 @@ func checkIfStepActive(utils piperutils.FileUtils) error {
 		runSteps = runConfigV1.RunSteps
 		runStages = runConfigV1.RunStages
 	} else {
+		log.Entry().Infof("Going here 2")
 		runConfig := &config.RunConfig{StageConfigFile: stageConfigFile}
 		err = runConfig.InitRunConfig(projectConfig, nil, nil, nil, nil, doublestar.Glob, checkStepActiveOptions.openFile)
 		if err != nil {
@@ -100,9 +102,9 @@ func checkIfStepActive(utils piperutils.FileUtils) error {
 		runSteps = runConfig.RunSteps
 		runStages = runConfig.RunStages
 	}
-
-	log.Entry().Debugf("RunSteps: %v", runSteps)
-	log.Entry().Debugf("RunStages: %v", runStages)
+	//Ashly
+	log.Entry().Infof("RunSteps: %v", runSteps)
+	log.Entry().Infof("RunStages: %v", runStages)
 
 	if len(checkStepActiveOptions.stageOutputFile) > 0 || len(checkStepActiveOptions.stepOutputFile) > 0 {
 		if len(checkStepActiveOptions.stageOutputFile) > 0 {
