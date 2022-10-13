@@ -232,7 +232,11 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 	}
 
 	// no support for building multiple containers
-	return runKaniko(config.DockerfilePath, config.BuildOptions, config.ReadImageDigest, execRunner, fileUtils, commonPipelineEnvironment)
+	kanikoErr := runKaniko(config.DockerfilePath, config.BuildOptions, config.ReadImageDigest, execRunner, fileUtils, commonPipelineEnvironment)
+	if kanikoErr != nil {
+		return kanikoErr
+	}
+	return nil
 }
 
 func runKaniko(dockerFilepath string, buildOptions []string, readDigest bool, execRunner command.ExecRunner, fileUtils piperutils.FileUtils, commonPipelineEnvironment *kanikoExecuteCommonPipelineEnvironment) error {
@@ -270,11 +274,10 @@ func runKaniko(dockerFilepath string, buildOptions []string, readDigest bool, ex
 
 		digestStr := string(digest)
 
-		log.Entry().Debugf("image digest: %s", digestStr)
+		log.Entry().Infof("image digest: %s", digestStr)
 
 		commonPipelineEnvironment.container.imageDigest = string(digestStr)
 		commonPipelineEnvironment.container.imageDigests = append(commonPipelineEnvironment.container.imageDigests, digestStr)
 	}
-
 	return nil
 }
