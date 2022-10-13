@@ -285,3 +285,8 @@ spec:
       env:
         - name: container
           value: docker
+  sidecars:
+    - image: anchore/syft:latest
+      name: syft
+      securityContext:
+        privileged: true
