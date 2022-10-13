@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/SAP/jenkins-library/pkg/syft"
+	syftCfg "github.com/anchore/syft/internal/config"
 	"strings"
 
 	"github.com/SAP/jenkins-library/pkg/buildsettings"
@@ -35,6 +38,10 @@ func kanikoExecute(config kanikoExecuteOptions, telemetryData *telemetry.CustomD
 	fileUtils := &piperutils.Files{}
 
 	err := runKanikoExecute(&config, telemetryData, commonPipelineEnvironment, &c, client, fileUtils)
+	syftErr := syft.Run(context.Background(), &syftCfg.Application{}, []string{})
+	if syftErr  != nil {
+		log.Entry().WithError(syftErr).Fatal("syft execution error")
+	}
 	if err != nil {
 		log.Entry().WithError(err).Fatal("Kaniko execution failed")
 	}
