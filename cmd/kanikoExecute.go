@@ -236,6 +236,8 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 	if kanikoErr != nil {
 		return kanikoErr
 	}
+	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
+	//command.ShellRunner("/bin/sh",fmt.Sprintf("syft %")
 	return nil
 }
 
