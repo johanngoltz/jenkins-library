@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"github.com/SAP/jenkins-library/pkg/syft"
-	syftCfg "github.com/anchore/syft/internal/config"
 	"strings"
 
 	"github.com/SAP/jenkins-library/pkg/buildsettings"
@@ -37,17 +34,13 @@ func kanikoExecute(config kanikoExecuteOptions, telemetryData *telemetry.CustomD
 
 	fileUtils := &piperutils.Files{}
 
-	err := runKanikoExecute(&config, telemetryData, commonPipelineEnvironment, &c, client, fileUtils)
-	syftErr := syft.Run(context.Background(), &syftCfg.Application{}, []string{})
-	if syftErr  != nil {
-		log.Entry().WithError(syftErr).Fatal("syft execution error")
-	}
+	err := runKanikoExecute(&config, telemetryData, commonPipelineEnvironment, &c, &c, client, fileUtils)
 	if err != nil {
 		log.Entry().WithError(err).Fatal("Kaniko execution failed")
 	}
 }
 
-func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.CustomData, commonPipelineEnvironment *kanikoExecuteCommonPipelineEnvironment, execRunner command.ExecRunner, httpClient piperhttp.Sender, fileUtils piperutils.FileUtils) error {
+func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.CustomData, commonPipelineEnvironment *kanikoExecuteCommonPipelineEnvironment, execRunner command.ExecRunner, shellRunner command.ShellRunner, httpClient piperhttp.Sender, fileUtils piperutils.FileUtils) error {
 	binfmtSupported, _ := docker.IsBinfmtMiscSupportedByHost(fileUtils)
 
 	if !binfmtSupported && len(config.TargetArchitectures) > 0 {
@@ -239,7 +232,16 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 	}
 
 	// no support for building multiple containers
-	return runKaniko(config.DockerfilePath, config.BuildOptions, config.ReadImageDigest, execRunner, fileUtils, commonPipelineEnvironment)
+	kanikoErr := runKaniko(config.DockerfilePath, config.BuildOptions, config.ReadImageDigest, execRunner, fileUtils, commonPipelineEnvironment)
+	if kanikoErr != nil {
+		return kanikoErr
+	}
+	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
+	sherr := shellRunner.RunShell("sh", fmt.Sprintf("sudo apt install curl | curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin | syft %s", commonPipelineEnvironment.container.imageDigest))
+	if sherr != nil {
+		return sherr
+	}
+	return nil
 }
 
 func runKaniko(dockerFilepath string, buildOptions []string, readDigest bool, execRunner command.ExecRunner, fileUtils piperutils.FileUtils, commonPipelineEnvironment *kanikoExecuteCommonPipelineEnvironment) error {
@@ -277,11 +279,10 @@ func runKaniko(dockerFilepath string, buildOptions []string, readDigest bool, ex
 
 		digestStr := string(digest)
 
-		log.Entry().Debugf("image digest: %s", digestStr)
+		log.Entry().Infof("image digest: %s", digestStr)
 
 		commonPipelineEnvironment.container.imageDigest = string(digestStr)
 		commonPipelineEnvironment.container.imageDigests = append(commonPipelineEnvironment.container.imageDigests, digestStr)
 	}
-
 	return nil
 }
