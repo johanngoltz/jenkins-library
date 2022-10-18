@@ -107,7 +107,7 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 			return errors.Wrapf(err, "failed to read new docker config file at /kaniko/.docker/config.json")
 		}
 	}
-
+	fmt.Printf("Docker config %v.", dockerConfig)
 	if err := fileUtils.FileWrite("/kaniko/.docker/config.json", dockerConfig, 0644); err != nil {
 		return errors.Wrap(err, "failed to write file '/kaniko/.docker/config.json'")
 	}
@@ -237,7 +237,9 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 		return kanikoErr
 	}
 	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
-	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s/%s", commonPipelineEnvironment.container.registryURL, commonPipelineEnvironment.container.imageNameTag))
+	shellRunner.AppendEnv([]string{"DOCKER_CONFIG", "/kaniko/.docker"})
+	//os.Setenv("DOCKER_CONFIG", "/kaniko/.docker")
+	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s:%s@%s", commonPipelineEnvironment.container.registryURL, commonPipelineEnvironment.container.imageNameTag, commonPipelineEnvironment.container.imageDigest))
 	if sherr != nil {
 		return sherr
 	}
