@@ -237,7 +237,7 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 		return kanikoErr
 	}
 	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
-	sherr := shellRunner.RunShell("sh", fmt.Sprintf("sudo apt install curl | curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin | syft %s", commonPipelineEnvironment.container.imageDigest))
+	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s", commonPipelineEnvironment.container.imageNameTag))
 	if sherr != nil {
 		return sherr
 	}
