@@ -477,9 +477,6 @@ func kanikoExecuteMetadata() config.StepData {
 			Containers: []config.Container{
 				{Image: "catmorte/syft-kaniko:v1", EnvVars: []config.EnvVar{{Name: "container", Value: "docker"}}, Options: []config.Option{{Name: "-u", Value: "0"}, {Name: "--entrypoint", Value: ""}}},
 			},
-			Sidecars: []config.Container{
-				{Name: "syft", Image: "anchore/syft:latest"},
-			},
 			Outputs: config.StepOutputs{
 				Resources: []config.StepResources{
 					{

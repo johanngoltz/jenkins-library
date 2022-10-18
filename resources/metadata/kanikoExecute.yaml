@@ -285,19 +285,3 @@ spec:
       env:
         - name: container
           value: docker
-  sidecars:
-    - image: anchore/syft:latest
-      name: syft
-      securityContext:
-        privileged: true
-      command:
-        - /busybox/tail -f /dev/null
-      shell: /busybox/sh
-      options:
-        - name: -u
-          value: "0"
-        - name: --entrypoint
-          value: ""
-      env:
-        - name: container
-          value: docker
