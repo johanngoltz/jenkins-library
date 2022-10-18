@@ -237,7 +237,7 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 		return kanikoErr
 	}
 	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
-	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s", commonPipelineEnvironment.container.imageNameTag))
+	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s/%s", commonPipelineEnvironment.container.registryURL, commonPipelineEnvironment.container.imageNameTag))
 	if sherr != nil {
 		return sherr
 	}
