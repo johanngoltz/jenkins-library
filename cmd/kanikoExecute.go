@@ -238,9 +238,8 @@ func runKanikoExecute(config *kanikoExecuteOptions, telemetryData *telemetry.Cus
 	}
 	log.Entry().Infof("The imageDigests %v", commonPipelineEnvironment.container.imageDigests)
 	shellRunner.AppendEnv([]string{"DOCKER_CONFIG", "/kaniko/.docker"})
-	//os.Setenv("DOCKER_CONFIG", "/kaniko/.docker")
 	_ = shellRunner.RunShell("/busybox/sh", "pwd |ls -a")
-	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s/%s:%s", strings.TrimPrefix(commonPipelineEnvironment.container.registryURL, "https://"), commonPipelineEnvironment.container.imageNameTag, commonPipelineEnvironment.container.imageDigest))
+	sherr := shellRunner.RunShell("/busybox/sh", fmt.Sprintf("syft %s/%s", strings.TrimPrefix(commonPipelineEnvironment.container.registryURL, "https://"), commonPipelineEnvironment.container.imageNameTag))
 	if sherr != nil {
 		return sherr
 	}
